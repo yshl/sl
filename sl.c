@@ -1,15 +1,10 @@
 /*========================================
- *    sl.c: SL version 5.0
- *	Copyright 1993,1998,2013
- *                Toyoda Masashi 
- *		  (mtoyoda@acm.org)
- *	Last Modified: 2013/ 5/ 5
+ *    sl.c:
+ *	Copyright 1993,1998 Toyoda Masashi 
+ *		(toyoda@is.titech.ac.jp)
+ *	Last Modified: 1998/ 7/22
  *========================================
  */
-/* sl version 5.00 : add -c option
-/*                                              by Toyoda Masashi 2013/ 5/ 5 */
-/* sl version 4.00 : add C51, usleep(40000)                                  */
-/*                                              by Toyoda Masashi 2002/12/31 */
 /* sl version 3.03 : add usleep(20000)                                       */
 /*                                              by Toyoda Masashi 1998/ 7/22 */
 /* sl version 3.02 : D51 flies! Change options.                              */
@@ -40,7 +35,6 @@
 int ACCIDENT  = 0;
 int LOGO      = 0;
 int FLY       = 0;
-int C51       = 0;
 
 int my_mvaddstr(int y, int x, char *str)
 {
@@ -60,13 +54,12 @@ void option(char *str)
 	    case 'a': ACCIDENT = 1; break;
 	    case 'F': FLY      = 1; break;
 	    case 'l': LOGO     = 1; break;
-	    case 'c': C51      = 1; break;
 	    default:                break;
 	}
     }
 }
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
     int x, i;
 
@@ -82,17 +75,13 @@ int main(int argc, char *argv[])
     scrollok(stdscr, FALSE);
 
     for (x = COLS - 1; ; --x) {
-	if (LOGO == 1) {
+	if (LOGO == 0) {
+	    if (add_D51(x) == ERR) break;
+	} else {
 	    if (add_sl(x) == ERR) break;
 	}
-	else if (C51 == 1) {
-	    if (add_C51(x) == ERR) break;
-	}
-	else {
-	    if (add_D51(x) == ERR) break;
-	}
 	refresh();
-	usleep(40000);
+	usleep(20000);
     }
     mvcur(0, COLS - 1, LINES - 1, 0);
     endwin();
@@ -177,46 +166,6 @@ add_D51(int x)
 	add_man(y + 2, x + 47);
     }
     add_smoke(y - 1, x + D51FUNNEL);
-    return OK;
-}
-
-add_C51(int x)
-{
-    static char *c51[C51PATTERNS][C51HIGHT + 1]
-	= {{C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH11, C51WH12, C51WH13, C51WH14, C51DEL},
-	   {C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH21, C51WH22, C51WH23, C51WH24, C51DEL},
-	   {C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH31, C51WH32, C51WH33, C51WH34, C51DEL},
-	   {C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH41, C51WH42, C51WH43, C51WH44, C51DEL},
-	   {C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH51, C51WH52, C51WH53, C51WH54, C51DEL},
-	   {C51STR1, C51STR2, C51STR3, C51STR4, C51STR5, C51STR6, C51STR7,
-	    C51WH61, C51WH62, C51WH63, C51WH64, C51DEL}};
-    static char *coal[C51HIGHT + 1]
-	= {COALDEL, COAL01, COAL02, COAL03, COAL04, COAL05,
-	   COAL06, COAL07, COAL08, COAL09, COAL10, COALDEL};
-
-    int y, i, dy = 0;
-
-    if (x < - C51LENGTH)  return ERR;
-    y = LINES / 2 - 5;
-
-    if (FLY == 1) {
-	y = (x / 7) + LINES - (COLS / 7) - C51HIGHT;
-	dy = 1;
-    }
-    for (i = 0; i <= C51HIGHT; ++i) {
-	my_mvaddstr(y + i, x, c51[(C51LENGTH + x) % C51PATTERNS][i]);
-	my_mvaddstr(y + i + dy, x + 55, coal[i]);
-    }
-    if (ACCIDENT == 1) {
-	add_man(y + 3, x + 45);
-	add_man(y + 3, x + 49);
-    }
-    add_smoke(y - 1, x + C51FUNNEL);
     return OK;
 }
 
